@@ -1,15 +1,9 @@
+
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <chrono>
-#include <time.h>
-// #include <bits/stdc++.h>
-using namespace std;
-using namespace std::chrono;
 const int inf = 1000000000;
-const int n = 10000;
-// int n = 4;
-
+const int n = 4;
 // A structure to represent a queue
 struct Queue
 {
@@ -27,8 +21,6 @@ struct Queue *createQueue(unsigned capacity)
         sizeof(struct Queue));
     queue->capacity = capacity;
     queue->front = queue->size = 0;
-
-    // This is important, see the enqueue
     queue->rear = capacity - 1;
     queue->array = (int *)malloc(
         queue->capacity * sizeof(int));
@@ -57,7 +49,7 @@ void enqueue(struct Queue *queue, int item)
     queue->rear = (queue->rear + 1) % queue->capacity;
     queue->array[queue->rear] = item;
     queue->size = queue->size + 1;
-    // printf("%d enqueued to queue\n", item);
+    printf("%d enqueued to queue\n", item);
 }
 
 // Function to remove an item from queue.
@@ -87,9 +79,7 @@ int rear(struct Queue *queue)
         return INT_MIN;
     return queue->array[queue->rear];
 }
-// vector<vector<int>> capacity, flow;
-// vector<int> height, excess, seen;
-// queue<int> excess_vertices;
+
 int min(int a, int b)
 {
     return (a < b) ? a : b;
@@ -105,7 +95,7 @@ void push(int u, int v)
     flow[v][u] -= d;
     excess[u] -= d;
     excess[v] += d;
-    if (d && excess[v] == d)
+    if (d && excess[v] > 0)
         enqueue(excess_vertices, v);
 }
 
@@ -143,17 +133,20 @@ void discharge(int u)
 
 int max_flow(int s, int t)
 {
-    // height.assign(n, 0);
-    height[s] = n;
-    // flow.assign(n, vector<int>(n, 0));
-    // excess.assign(n, 0);
+    for (int i = 0; i < n; i++)
+    {
+        height[i] = 0;
+        excess[i] = 0;
+        seen[i] = 0;
+    }
     excess[s] = inf;
+    height[s] = n;
+
     for (int i = 0; i < n; i++)
     {
         if (i != s)
             push(s, i);
     }
-    // seen.assign(n, 0);
 
     while (!isEmpty(excess_vertices))
     {
@@ -171,27 +164,20 @@ int max_flow(int s, int t)
 
 int main()
 {
-    // n = 4;
-    // capacity.assign(n, vector<int>(n, 0));
-
-    for (int i = 0; i < n; i++)
-    {
-        for (int j = 0; j < n; j++)
-            capacity[i][j] = 0;
-    }
     for (int i = 0; i < n; i++)
     {
         for (int j = 0; j < n; j++)
         {
-            capacity[i][j] = i + j;
+            capacity[i][j] = 0;
+            flow[i][j] = 0;
         }
     }
-    // clock_t tStart = clock();
-    auto start = high_resolution_clock::now();
-    printf("%d\n", max_flow(0, 99));
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    printf("%d", duration.count());
-    // printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+
+    capacity[0][1] = 3;
+    capacity[0][2] = 1;
+    capacity[1][3] = 1;
+    capacity[2][3] = 3;
+    capacity[1][2] = 3;
+    printf("max-flow for this graph is: %d\n", max_flow(0, 3));
     return 0;
 }
