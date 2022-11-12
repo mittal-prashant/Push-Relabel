@@ -7,6 +7,12 @@
 const int inf = 1000000000;
 int n;
 
+// function for minimum of a and b
+int min(int a, int b)
+{
+    return (a < b) ? a : b;
+}
+
 // structure for any node in queue
 typedef struct Queue
 {
@@ -84,18 +90,12 @@ int front_value()
     return front->value;
 }
 
-// function for minimum of a and b
-int min(int a, int b)
-{
-    return (a < b) ? a : b;
-}
-
 // function to push the flow along the edge
 void push(int u, int v)
 {
-    int d = min(excess[u], capacity[u][v] - flow[u][v]); //Push the minimum of excess and capcity left in residual graph
-    flow[u][v] += d; // pushing the flow from u to v
-    flow[v][u] -= d; //Anti symmetry constraint
+    int d = min(excess[u], capacity[u][v] - flow[u][v]); // pushing the flow from u to v
+    flow[u][v] += d;
+    flow[v][u] -= d;
 
     // excess at u is decreased by flow sent towards v
     excess[u] -= d;
@@ -104,7 +104,6 @@ void push(int u, int v)
     excess[v] += d;
     if (d && excess[v] == d)
     {
-        //If after push operation v becomes active vertex, we enqueue it into queue of active vertex
         enqueue(v);
     }
 }
@@ -113,7 +112,6 @@ void push(int u, int v)
 void relabel(int u)
 {
     int d = inf;
-    //We find min value of h(v) where u->v is an edge and set h(u)=h(v)+1
     for (int i = 0; i < n; i++)
     {
         if (capacity[u][i] - flow[u][i] > 0)
@@ -132,7 +130,6 @@ void relabel(int u)
 // function to implement the discharge in the algorithm
 void discharge(int u)
 {
-    //While the vertex has excess flow, we continue to perform push/relabel operations
     while (excess[u] > 0)
     {
         if (seen[u] < n)
@@ -150,14 +147,14 @@ void discharge(int u)
         }
         else
         {
-            // relabel the vertex u if seen[u] >= n and set seen[u] = 0 i.e relabel the vertex when no vertex was found suitable for pushing
+            // relabel the vertex u if seen[u] >= n and set seen[u] = 0
             relabel(u);
             seen[u] = 0;
         }
     }
 }
 
-// function to find the max flow using push_relabel algorithm between vertices s and t ion a given graph
+// function to find the max flow using push relabel algorithm between vertices s and t ion a given graph
 int max_flow(int s, int t)
 {
     // intitalize the height of source as n and the excess flow at source to be infinite

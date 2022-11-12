@@ -32,7 +32,6 @@ z[4] = 15685
 plt.scatter(x, y, color='red')
 plt.scatter(x, z, color='blue')
 plt.legend(["Ford Fulkerson", "Push Relabel"], loc="upper right")
-# plt.yticks(np.arange(0, 0.1, 0.01))
 plt.xlabel('Testcase Number')
 plt.ylabel('Time Taken (Microseconds)')
 plt.title('Time Graph')
