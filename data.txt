@@ -1,19 +1,19 @@
 1- 1
-ford : 32085
-push : 8028
+ford : 103000
+push : 12872000
 
 2- i+1
-ford : 40119
-push : 8006
+ford : 136000
+push : 13000
 
 3- j+1
-ford : 31259
-push : 6806
+ford : 160000
+push : 24000
 
 4- i+j+1
-ford : 32245
-push : 13623
+ford : 150000
+push : 24000
 
 5- i*j+1
-ford : 32146
-push : 15685
+ford : 110000
+push : 15000

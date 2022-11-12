@@ -64,7 +64,7 @@ int maxflow(int s, int t)
 
 int main()
 {
-    freopen("input6.txt", "r", stdin);
+    freopen("input5.txt", "r", stdin);
     cin >> n;
     capacity.assign(n, vector<int>(n, 0));
     adj.resize(n);
@@ -79,12 +79,11 @@ int main()
         capacity[x][y] = c;
         capacity[y][x] = c;
     }
-    // clock_t tStart = clock();
-    auto start = high_resolution_clock::now();
-    printf("%d\n", maxflow(0, 99));
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    printf("%d", duration.count());
-    // printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+    clock_t t;
+    t = clock();
+    printf("%d\n", maxflow(0, n - 1));
+    t = clock() - t;
+    int time_taken = (((double)t) / CLOCKS_PER_SEC) * 1000000;
+    printf("%d\n", (time_taken));
     return 0;
 }

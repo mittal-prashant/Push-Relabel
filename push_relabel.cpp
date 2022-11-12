@@ -1,103 +1,77 @@
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <chrono>
 #include <time.h>
-#include <bits/stdc++.h>
-using namespace std;
-using namespace std::chrono;
+
 const int inf = 1000000000;
-// const int n = 10000;
-int n = 4;
+int n;
 
-// A structure to represent a queue
-struct Queue
+typedef struct Queue
 {
-    int front, rear, size;
-    unsigned capacity;
-    int *array;
-};
+    int value;
+    Queue *next;
+} Queue;
 
-// function to create a queue
-// of given capacity.
-// It initializes size of queue as 0
-struct Queue *createQueue(unsigned capacity)
+int **capacity;
+int **flow;
+int *height, *seen, *excess;
+Queue *front = NULL, *rear = NULL;
+
+int isEmpty()
 {
-    struct Queue *queue = (struct Queue *)malloc(
-        sizeof(struct Queue));
-    queue->capacity = capacity;
-    queue->front = queue->size = 0;
-
-    // This is important, see the enqueue
-    queue->rear = capacity - 1;
-    queue->array = (int *)malloc(
-        queue->capacity * sizeof(int));
-    return queue;
+    if (front == NULL)
+    {
+        return 1;
+    }
+    return 0;
 }
 
-// Queue is full when size becomes
-// equal to the capacity
-int isFull(struct Queue *queue)
+Queue *new_node(int item)
 {
-    return (queue->size == queue->capacity);
+    Queue *temp = (Queue *)malloc(sizeof(Queue));
+    temp->value = item;
+    temp->next = NULL;
+    return temp;
 }
 
-// Queue is empty when size is 0
-int isEmpty(struct Queue *queue)
+void enqueue(int item)
 {
-    return (queue->size == 0);
-}
-
-// Function to add an item to the queue.
-// It changes rear and size
-void enqueue(struct Queue *queue, int item)
-{
-    if (isFull(queue))
+    Queue *temp = new_node(item);
+    if (isEmpty())
+    {
+        front = temp;
+        rear = temp;
         return;
-    queue->rear = (queue->rear + 1) % queue->capacity;
-    queue->array[queue->rear] = item;
-    queue->size = queue->size + 1;
-    // printf("%d enqueued to queue\n", item);
+    }
+    rear->next = temp;
+    rear = rear->next;
 }
 
-// Function to remove an item from queue.
-// It changes front and size
-int dequeue(struct Queue *queue)
+int dequeue()
 {
-    if (isEmpty(queue))
+    if (isEmpty())
+    {
         return INT_MIN;
-    int item = queue->array[queue->front];
-    queue->front = (queue->front + 1) % queue->capacity;
-    queue->size = queue->size - 1;
+    }
+    int item = front->value;
+    front = front->next;
     return item;
 }
 
-// Function to get front of queue
-int front(struct Queue *queue)
+int front_value()
 {
-    if (isEmpty(queue))
+    if (isEmpty())
+    {
         return INT_MIN;
-    return queue->array[queue->front];
+    }
+    return front->value;
 }
 
-// Function to get rear of queue
-int rear(struct Queue *queue)
-{
-    if (isEmpty(queue))
-        return INT_MIN;
-    return queue->array[queue->rear];
-}
-// vector<vector<int>> capacity, flow;
-// vector<int> height, excess, seen;
-// queue<int> excess_vertices;
 int min(int a, int b)
 {
     return (a < b) ? a : b;
 }
-int **capacity;
-int **flow;
-int *height, *seen, *excess;
-struct Queue *excess_vertices = createQueue(1000);
+
 void push(int u, int v)
 {
     int d = min(excess[u], capacity[u][v] - flow[u][v]);
@@ -106,7 +80,9 @@ void push(int u, int v)
     excess[u] -= d;
     excess[v] += d;
     if (d && excess[v] == d)
-        enqueue(excess_vertices, v);
+    {
+        enqueue(v);
+    }
 }
 
 void relabel(int u)
@@ -115,10 +91,14 @@ void relabel(int u)
     for (int i = 0; i < n; i++)
     {
         if (capacity[u][i] - flow[u][i] > 0)
+        {
             d = min(d, height[i]);
+        }
     }
     if (d < inf)
+    {
         height[u] = d + 1;
+    }
 }
 
 void discharge(int u)
@@ -129,9 +109,13 @@ void discharge(int u)
         {
             int v = seen[u];
             if (capacity[u][v] - flow[u][v] > 0 && height[u] == height[v] + 1)
+            {
                 push(u, v);
+            }
             else
+            {
                 seen[u]++;
+            }
         }
         else
         {
@@ -143,38 +127,36 @@ void discharge(int u)
 
 int max_flow(int s, int t)
 {
-    // height.assign(n, 0);
     height[s] = n;
-    // flow.assign(n, vector<int>(n, 0));
-    // excess.assign(n, 0);
     excess[s] = inf;
     for (int i = 0; i < n; i++)
     {
         if (i != s)
+        {
             push(s, i);
+        }
     }
-    // seen.assign(n, 0);
-
-    while (!isEmpty(excess_vertices))
+    while (!isEmpty())
     {
-        int u = front(excess_vertices);
-        int f = dequeue(excess_vertices);
+        int u = front_value();
+        int f = dequeue();
         if (u != s && u != t)
+        {
             discharge(u);
+        }
     }
-
     int max_flow = 0;
     for (int i = 0; i < n; i++)
+    {
         max_flow += flow[i][t];
+    }
     return max_flow;
 }
 
 int main()
 {
-    freopen("input6.txt", "r", stdin);
-    // n = 4;
-    // capacity.assign(n, vector<int>(n, 0));
-    cin >> n;
+    freopen("input5.txt", "r", stdin);
+    scanf("%d", &n);
     capacity = (int **)malloc(n * sizeof(int));
     flow = (int **)malloc(n * sizeof(int));
     height = (int *)malloc(n * sizeof(int));
@@ -194,20 +176,19 @@ int main()
         }
     }
     int m;
-    cin >> m;
+    scanf("%d", &m);
     for (int i = 0; i < m; i++)
     {
         int x, y, c;
-        cin >> x >> y >> c;
+        scanf("%d %d %d", &x, &y, &c);
         capacity[x][y] = c;
         capacity[y][x] = c;
     }
-    // clock_t tStart = clock();
-    auto start = high_resolution_clock::now();
-    printf("%d\n", max_flow(0, 99));
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    printf("%d", duration.count());
-    // printf("Time taken: %.2fs\n", (double)(clock() - tStart) / CLOCKS_PER_SEC);
+    clock_t t;
+    t = clock();
+    printf("%d\n", max_flow(0, n - 1));
+    t = clock() - t;
+    int time_taken = (((double)t) / CLOCKS_PER_SEC) * 1000000;
+    printf("%d\n", (time_taken));
     return 0;
 }
