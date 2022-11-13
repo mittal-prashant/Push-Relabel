@@ -72,6 +72,7 @@ int main()
     // freopen("input3.txt", "r", stdin);
     // freopen("input4.txt", "r", stdin);
     freopen("input5.txt", "r", stdin);
+    // freopen("input6.txt", "r", stdin);
 
     // taking the input for the number of vertices
     scanf("%d", &n);
