@@ -7,113 +7,38 @@
 const int inf = 1000000000;
 int n;
 
-// structure for any node in queue
-typedef struct Queue
-{
-    int value;
-    Queue *next;
-} Queue;
-
-// array for storing the flow capacity of an edge in a graph
-int **capacity;
-int **flow;
-int *height, *seen, *excess;
-
-// represent the front end of the queue and the rear end of the queue
-Queue *front = NULL, *rear = NULL;
-
-// function to check whether the queue is empty or not
-int isEmpty()
-{
-    if (front == NULL)
-    {
-        return 1;
-    }
-    return 0;
-}
-
-// function to create a new node in the queue
-Queue *new_node(int item)
-{
-    Queue *temp = (Queue *)malloc(sizeof(Queue));
-
-    temp->value = item;
-    temp->next = NULL;
-
-    return temp;
-}
-
-// function to add the value in queue at the rear end
-void enqueue(int item)
-{
-    Queue *temp = new_node(item);
-    if (isEmpty())
-    {
-        front = temp;
-        rear = temp;
-        return;
-    }
-
-    // moving the rear pointer one step forward since value is added at rear end
-    rear->next = temp;
-    rear = rear->next;
-}
-
-// function to pop the value from the front end of the queue
-int dequeue()
-{
-    if (isEmpty())
-    {
-        // if queue is empty return minimum value of integer
-        return INT_MIN;
-    }
-
-    int item = front->value;
-    front = front->next;
-    return item;
-}
-
-// function to get the value at the front of queue without deleting it
-int front_value()
-{
-    if (isEmpty())
-    {
-        // if queue is empty return minimum value of integer
-        return INT_MIN;
-    }
-    return front->value;
-}
-
-// function for minimum of a and b
 int min(int a, int b)
 {
     return (a < b) ? a : b;
 }
 
+int max(int a, int b)
+{
+    return (a > b) ? a : b;
+}
+
+int **capacity;
+int **flow;
+int *height, *excess;
+
 // function to push the flow along the edge
 void push(int u, int v)
 {
-    int d = min(excess[u], capacity[u][v] - flow[u][v]); // Push the minimum of excess and capcity left in residual graph
-    flow[u][v] += d;                                     // pushing the flow from u to v
-    flow[v][u] -= d;                                     // Anti symmetry constraint
+    int d = min(excess[u], capacity[u][v] - flow[u][v]);
+    flow[u][v] += d;
+    flow[v][u] -= d;
 
     // excess at u is decreased by flow sent towards v
     excess[u] -= d;
 
     // excess at v is increased by flow receieved from u
     excess[v] += d;
-    if (d && excess[v] == d)
-    {
-        // If after push operation v becomes active vertex, we enqueue it into queue of active vertex
-        enqueue(v);
-    }
 }
 
 // function to relabel the vertex
 void relabel(int u)
 {
     int d = inf;
-    // We find min value of h(v) where u->v is an edge and set h(u)=h(v)+1
     for (int i = 0; i < n; i++)
     {
         if (capacity[u][i] - flow[u][i] > 0)
@@ -121,7 +46,6 @@ void relabel(int u)
             d = min(d, height[i]);
         }
     }
-
     if (d < inf)
     {
         // relabeling the vertex height
@@ -129,58 +53,79 @@ void relabel(int u)
     }
 }
 
-// function to implement the discharge in the algorithm
-void discharge(int u)
+// function to find the maximum height vertex
+int maxmheight()
 {
-    // While the vertex has excess flow, we continue to perform push/relabel operations
-    while (excess[u] > 0)
+    int maxm = 0;
+    for (int i = 1; i < n - 1; i++)
     {
-        if (seen[u] < n)
+        if (excess[i] > 0)
         {
-            int v = seen[u];
-            if (capacity[u][v] - flow[u][v] > 0 && height[u] == height[v] + 1)
-            {
-                // if condition is satisfied the flow is pushed towards in edge (u,v)
-                push(u, v);
-            }
-            else
-            {
-                seen[u]++;
-            }
-        }
-        else
-        {
-            // relabel the vertex u if seen[u] >= n and set seen[u] = 0 i.e relabel the vertex when no vertex was found suitable for pushing
-            relabel(u);
-            seen[u] = 0;
+            maxm = max(maxm, height[i]);
         }
     }
+    return maxm;
 }
 
-// function to find the max flow using push relabel algorithm between vertices s and t ion a given graph
+// function to check whether the excess value if positive or not and return the first positive value
+int checkexcess()
+{
+    for (int i = 1; i < n - 1; i++)
+    {
+        if (excess[i] > 0)
+        {
+            return excess[i];
+        }
+    }
+    return 0;
+}
+
+// function to find the max flow using push_relabel algorithm between vertices s and t ion a given graph
 int max_flow(int s, int t)
 {
     // intitalize the height of source as n and the excess flow at source to be infinite
-    height[s] = n;
     excess[s] = inf;
+    height[s] = n;
 
     for (int i = 0; i < n; i++)
     {
         if (i != s)
         {
-            // push the flow from source to all of its neighbours
             push(s, i);
         }
     }
 
-    while (!isEmpty())
+    int max_height = maxmheight();
+
+    int f = checkexcess();
+    while (true)
     {
-        int u = front_value();
-        int f = dequeue();
-        if (u != s && u != t)
+        for (int i = 1; i < n - 1; i++)
         {
-            discharge(u);
+            if (height[i] == max_height && excess[i] > 0)
+            {
+                bool pushed = false;
+                for (int j = 0; j < n && excess[i]; j++)
+                {
+                    if (capacity[i][j] - flow[i][j] > 0 && height[i] == height[j] + 1)
+                    {
+                        push(i, j);
+                        pushed = true;
+                    }
+                }
+                if (!pushed)
+                {
+                    relabel(i);
+                    break;
+                }
+            }
         }
+        f = checkexcess();
+        if (f == 0)
+        {
+            break;
+        }
+        max_height = maxmheight();
     }
 
     // now the maximum flow is the sum of flow sent from source vertex to all of ots neighbouring vertices
@@ -209,14 +154,12 @@ int main()
     capacity = (int **)malloc(n * sizeof(int));
     flow = (int **)malloc(n * sizeof(int));
     height = (int *)malloc(n * sizeof(int));
-    seen = (int *)malloc(n * sizeof(int));
     excess = (int *)malloc(n * sizeof(int));
 
     // initialize all the values in the arrays
     for (int i = 0; i < n; i++)
     {
         height[i] = 0;
-        seen[i] = 0;
         excess[i] = 0;
         capacity[i] = (int *)malloc(n * sizeof(int));
         flow[i] = (int *)malloc(n * sizeof(int));
