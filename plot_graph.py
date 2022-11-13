@@ -5,14 +5,15 @@ from skimage import filters
 from skimage.color import rgb2gray
 from skimage import feature
 import os
+import math
 
 
-x = np.zeros(5)
+x =[1,2,3,4,5]
 y = np.zeros(5)
 z = np.zeros(5)
 
-for i in range(5):
-    x[i] = i+1
+new_list = range(math.floor(min(x)), math.ceil(max(x))+1)
+plt.xticks(new_list)
 
 y[0] = 32085
 z[0] = 8028
