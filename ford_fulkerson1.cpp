@@ -84,8 +84,8 @@ int main()
     {
         for (int y = x; y < n; y++)
         {
-            capacity[x][y] = x * y + 1;
-            capacity[y][x] = x * y + 1;
+            capacity[x][y] = x + y + 1;
+            capacity[y][x] = x + y + 1;
             adj[x].push_back(y);
             adj[y].push_back(x);
         }
